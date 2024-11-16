@@ -1,2 +1,2 @@
 # test_repo_1
-this is an interim repo for sourcetree
+这是一个学习stm32的记录仓库
