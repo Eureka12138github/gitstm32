@@ -4,6 +4,7 @@
 #include "Key.h"
 #include "Timer.h"
 #include "Store.h"
+//测试是否可被git识别到修改具体某行！
 /*
 	问题描述如下：OLED无法正常显示，必须注释掉Timer_Init();或者在Timer_Init()中将ARR与PSC改大才可以
 	目前实测，将ARR改为10000,PSC改为7200时能够正常显示。按理说两者不应该冲突的，而且在练习1 秒表中
