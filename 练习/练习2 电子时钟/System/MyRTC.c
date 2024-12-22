@@ -1,6 +1,6 @@
 #include "stm32f10x.h"
 #include <time.h>
-uint16_t MyRTC_Time[] = {2024,10,18,19,19,55};//时间设定
+uint16_t MyRTC_Time[7] = {2024,10,18,19,19,55};//时间设定
 void MyRTC_SetTime(void);
 void MyRTC_Init(void)
 {
@@ -20,7 +20,7 @@ void MyRTC_Init(void)
 	RTC_WaitForLastTask();//等待上次操作完成
 	RTC_SetPrescaler(32768-1);//配置预分频器，现在是1HZ
 	RTC_WaitForLastTask();//等待上次操作完成
-	MyRTC_SetTime();	
+	MyRTC_SetTime();//初始化设置时间	
 	BKP_WriteBackupRegister(BKP_DR1,0XA5A5);
 	}
 	else 
@@ -70,7 +70,7 @@ void MyRTC_ReadTime(void)
 {
 	time_t time_cnt;
 	struct tm time_date;
-	time_cnt = RTC_GetCounter() +8*60*60;//获取CNT值
+	time_cnt = RTC_GetCounter() +8*60*60;//获取CNT值，加上时区偏移
 	time_date = *localtime(&time_cnt);//得到日期时间
 	
 	MyRTC_Time[0] = time_date.tm_year + 1900;//将结构体中的数据填充到数组中
@@ -79,6 +79,7 @@ void MyRTC_ReadTime(void)
 	MyRTC_Time[3] = time_date.tm_hour;
 	MyRTC_Time[4] = time_date.tm_min;
 	MyRTC_Time[5] = time_date.tm_sec;
+	MyRTC_Time[6] = time_date.tm_wday;
 	
 }
 
