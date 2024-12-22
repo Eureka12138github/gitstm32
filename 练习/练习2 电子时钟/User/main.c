@@ -12,7 +12,7 @@ int main(void)
 
 	OLED_Init();
 	MyRTC_Init();
-	Timer_Init();
+	//Timer_Init();
 	Delay_s(1);
 	while(DHT11_Init())	//检测DHT11是否存在
 	{
@@ -23,6 +23,7 @@ int main(void)
 	OLED_ShowString(0,50,"Humi:  %RH",OLED_8X16);
 	OLED_ShowString(0,0,"Date:    -  -  ",OLED_8X16);
 	OLED_ShowString(0,15,"Time:  :  :  ",OLED_8X16);
+	OLED_Update();
 	MyRTC_SetTime();
 	while(1)
 	{
@@ -43,7 +44,7 @@ int main(void)
 		OLED_ShowNum(87,15,MyRTC_Time[5],2,OLED_8X16);//显示秒
 //		OLED_ShowNum(32,35,MyRTC_Time[6],1,OLED_8X16);//显示星期
 		
-//		DHT11_Read_Data(&temp,&humi);
+		DHT11_Read_Data(&temp,&humi);
 		OLED_ShowNum(40,35,temp,2,OLED_8X16);//
 		OLED_ShowNum(40,50,humi,2,OLED_8X16);
 		OLED_Update();
@@ -51,26 +52,26 @@ int main(void)
 		//16分
 	}
 }
-void TIM2_IRQHandler(void)
-{
-    static uint16_t T0Count1;
+//void TIM2_IRQHandler(void)
+//{
+//    static uint16_t T0Count1;
 
-    // 检查是否有更新中断发生
-    if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
-    {
-        // 对不同的计数器进行加1操作
-        T0Count1++;
-        // 清除更新中断的标志位
-        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-    }
-    
-    if (T0Count1 >= 1500)
-		
-	
-    {
-        T0Count1 = 0;
-        //DHT11_Read_Data(&temp,&humi);
-    }
+//    // 检查是否有更新中断发生
+//    if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
+//    {
+//        // 对不同的计数器进行加1操作
+//        T0Count1++;
+//        // 清除更新中断的标志位
+//        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+//    }
+//    
+//    if (T0Count1 >= 1500)
+//		
+//	
+//    {
+//        T0Count1 = 0;
+//        //DHT11_Read_Data(&temp,&humi);
+//    }
 
-}
+//}
 
