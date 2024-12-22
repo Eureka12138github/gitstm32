@@ -33,8 +33,8 @@ int main(void)
 		W25164_Init();
 		// 擦除闪存芯片W25Q64的指定扇区
 		W25Q64_Sector_Erase(0X000000);
+		//学了flash后，小小秒表用不上W25Q64
 //		OLED_ShowString(0, 40, "TEST", OLED_8X16);
-
     // 主循环
     while (1)
     {
