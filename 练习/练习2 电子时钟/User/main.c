@@ -27,6 +27,7 @@ int main(void)
 	MyRTC_SetTime();
 	while(1)
 	{
+		//up to date
 		MyRTC_ReadTime();
 //		//看到43分，现在日期获取失败！
 //		/*
