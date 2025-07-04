@@ -32,3 +32,5 @@
 
 此刻的做法是先切换回main分支，即`git switch main`,然后在此分支上新建一个`hotfix`分支用于修复紧急问题，修复完毕后，再切换回main，`git checkout main`
 此后再使用`git merge hotfix`进行分支合并，如此main上的问题就被修复了。
+
+当问题被修复后，可以使用`git branch -d hotfix`，删除该临时分支，然后再`git switch iss53`，继续解决问题53
