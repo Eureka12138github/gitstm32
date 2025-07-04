@@ -29,5 +29,6 @@
 可以用`git restore <文件名>`来舍弃对该文件做出的修改。除非确实清楚不想要对这个文件所作出的修改了，否则不要使用这个指令
 
 加入现在正在解决问题53，当前处于iss53分支上，原来的mainr代码突然出现了问题，需要马上修复。
-此刻的做法是先切换回main分支，即`git switch main`,然后再次分支上新建一个`hotfix`分支用于修复紧急问题，修复完毕后，再切换回main，`git checkout main`
+
+此刻的做法是先切换回main分支，即`git switch main`,然后在此分支上新建一个`hotfix`分支用于修复紧急问题，修复完毕后，再切换回main，`git checkout main`
 此后再使用`git merge hotfix`进行分支合并，如此main上的问题就被修复了。
