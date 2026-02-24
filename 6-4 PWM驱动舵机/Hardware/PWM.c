@@ -1,62 +1,174 @@
-#include "stm32f10x.h"                  // Device header
+#include "stm32f10x.h"                  // 设备头文件
+
+/**
+ * @brief PWM初始化函数
+ * @details 配置TIM2为PWM输出模式，用于舵机控制
+ * @note 舵机控制需要50Hz的PWM频率，通过PA1引脚输出
+ */
 void PWM_Init(void)
 {
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);//tIM2是APB1总线的外设，所以要开启APB1时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF_PP;//复用推挽输出，只有这样，引脚的控制权才能交给偏上外设，PWM波形才能通过引脚输出视频解释在6-4 21分
-	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_1;
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA,&GPIO_InitStructure);
-	TIM_InternalClockConfig(TIM2);//这句表明TIM2的时基单元由内部时钟驱动，系统默认由内部时钟驱动，不写这句也行
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;//TIM_ClockDivision与滤波的频率有关，决定是否对内部时钟进行分频，需滤波强一点，就TIM_CKD_DIV2或者TIM_CKD_DIV4
-	TIM_TimeBaseInitStructure.TIM_RepetitionCounter=0;//此处高级计数器才用到，故直接给零了
-	TIM_TimeBaseInitStructure.TIM_Period=20000-1;//ARR,减一是因为预分频器和计数器都有1个数的偏差
-	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;//这里是设置计数器的计数模式的，设置为向上计数
-	TIM_TimeBaseInitStructure.TIM_Prescaler=72-1;//这里是设置预分频器的主频的“切分”，也就是把主频“切”成72份
-	/*
-	时基单元：PSC(预分频器)、ARR(自动重装器)、CNT(计数器)
-	计数器溢出频率:CK_CNT_OV=CK_CNT/(ARR+1)=CK_PSC/(PSC+1)/(ARR+1)
-	害，实际要计算每次计数时间就相当于1/(接到分频器上的频率(Mhz)*1000000/预分频器的值-1/重装的值-1)
-	例如：现在我接到PSC上的频率为单片机的主频即72Mhz，而PSC的值为7200，即进行7200分频，重装值为10000，即
-	此时根据公式可得：1/(72000000/7200-1+1/10000-1+1)=1s
-	PSC预分配器，对主频72Mhz进行分频，为0表示不分频，即还是72Mhz,为1表示二分频，即72Mhz/2
-	故在此处表示的是进行7200分频，即72Mhz/7200，但不能直接写7200，根据其规则，应该要写7200-1
-	它后面会自己“+1”从而把“-1”给抵消掉
-	另：PSC和ARR都有自己的缓冲寄存器，它们的目的是为了在中断更改相应值的时候不会出现错误，用或不用，可自己设置
-	具体见江协视频6-1 的39分左右
-	另：PSC与ARR的取值范围是0~65535，不能超范围，若预PSC小点，ARR大点，那就是以较高的频率计较多的数
-	若若预PSC大点，ARR小点，那就是以较低的频率计较少的数，但结果是不变的，例如在这里我可以
-	*/
-
-	TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStructure);//初始化通用定时器TIM2的时基单元
-	TIM_OCInitTypeDef TIM_OCInitStructure;
-	TIM_OCStructInit(&TIM_OCInitStructure);//给结构体没用到的参数赋初始值后，再对个别需要用到的参数赋值，这样，可以避免一些问题
-	TIM_OCInitStructure.TIM_OCMode=TIM_OCMode_PWM1;//设置输出比较的模式
-	TIM_OCInitStructure.TIM_OCPolarity=TIM_OCPolarity_High;//设置输出比较的极性
-	TIM_OCInitStructure.TIM_OutputState=TIM_OutputState_Enable;//输出使能
-	TIM_OCInitStructure.TIM_Pulse=0;//CCR,在这里，CCR是改变占空比的，是多少遍百分之多少
-	//结合公式，再根据CCR,ARR,PSC的值可知，此时配置的PWM波为50Hz
-	TIM_OC2Init(TIM2,&TIM_OCInitStructure);//这里初始化通道2，因为用了PA1引脚，看引脚功能图
-	//如果要驱动多个驱动电机或直流电机，那么用同一个定时器的不同通道就完全可以，占空比可各自调，相位和频率是相同的。
-	
-	TIM_Cmd(TIM2,ENABLE);//这句相当于给TIM2使能，我的理解是相当于51中的ET0=1;吧
+    /* 
+     * ==================== 时钟配置 ====================
+     * 使能定时器和GPIO所需时钟
+     */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);   // TIM2挂载在APB1总线上
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);  // PA1引脚需要GPIOA时钟
+    
+    /* 
+     * ==================== GPIO引脚配置 ====================
+     * 配置PWM输出引脚
+     */
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;    // 复用推挽输出模式
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;          // 使用PA1引脚
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;  // 输出速度50MHz
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    /*
+     * GPIO模式说明：
+     * GPIO_Mode_AF_PP = 复用推挽输出
+     * 作用：将引脚控制权交给外设(TIM2)，使PWM波形能够正常输出
+     * 就像把汽车方向盘交给自动驾驶系统一样
+     */
+    
+    /* 
+     * ==================== 定时器时钟源配置 ====================
+     */
+    TIM_InternalClockConfig(TIM2);  // 配置TIM2使用内部时钟（系统默认）
+    
+    /* 
+     * ==================== 定时器基本参数配置 ====================
+     * 配置TIM2的时基单元参数
+     */
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+    
+    // 时钟分频配置
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;  // 不分频
+    
+    // 重复计数器（仅高级定时器使用）
+    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+    
+    // 自动重装载值ARR - 决定PWM周期
+    TIM_TimeBaseInitStructure.TIM_Period = 20000 - 1;  // 20ms周期（50Hz）
+    
+    // 计数模式
+    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;  // 向上计数
+    
+    // 预分频系数PSC - 决定计数频率
+    TIM_TimeBaseInitStructure.TIM_Prescaler = 72 - 1;  // 72MHz/72 = 1MHz
+    
+    /*
+     * PWM参数配置详解：
+     * 
+     * 时基单元组成：PSC(预分频器)、ARR(自动重装器)、CNT(计数器)
+     * 计数器溢出频率计算：CK_CNT_OV = CK_PSC/(PSC+1)/(ARR+1)
+     * 
+     * 舵机控制配置：
+     * - 系统主频：72MHz
+     * - 预分频后频率：72MHz/72 = 1MHz（计数频率）
+     * - PWM周期：1MHz/20000 = 50Hz（20ms周期）
+     * - 舵机控制范围：0.5ms-2.5ms对应0°-180°
+     * 
+     * 参数说明：
+     * - PSC和ARR都有缓冲寄存器，用于安全的参数更新
+     * - 参数取值范围：0~65535
+     * - 硬件会自动对设置值加1，所以需要减1补偿
+     */
+    
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);  // 初始化时基单元
+    
+    /* 
+     * ==================== PWM输出通道配置 ====================
+     * 配置输出比较通道实现PWM功能
+     */
+    TIM_OCInitTypeDef TIM_OCInitStructure;
+    TIM_OCStructInit(&TIM_OCInitStructure);  // 初始化结构体默认值
+    
+    // 输出比较模式
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;      // PWM模式1
+    
+    // 输出极性
+    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;  // 高电平有效
+    
+    // 输出使能
+    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;  // 使能输出
+    
+    // 脉冲宽度（初始占空比0%）
+    TIM_OCInitStructure.TIM_Pulse = 0;  // CCR初始值为0
+    
+    /*
+     * 舵机控制说明：
+     * 当前配置产生50Hz的PWM信号
+     * 通过改变CCR值来控制舵机角度：
+     * - 0.5ms脉宽对应0°（CCR ≈ 500）
+     * - 1.5ms脉宽对应90°（CCR ≈ 1500）
+     * - 2.5ms脉宽对应180°（CCR ≈ 2500）
+     * 
+     * 多通道扩展：
+     * 同一定时器的不同通道可以独立控制多个舵机
+     * 相位和频率相同，但占空比可各自调节
+     */
+    
+    TIM_OC2Init(TIM2, &TIM_OCInitStructure);  // 初始化通道2（PA1）
+    
+    /* 
+     * ==================== 启动定时器 ====================
+     */
+    TIM_Cmd(TIM2, ENABLE);  // 启动TIM2定时器
 }
+
+/**
+ * @brief 设置PWM通道2占空比
+ * @param Compare 要设置的比较值
+ * @details 通过修改CCR寄存器值来调节PWM占空比
+ * @note 对于舵机控制，参数值直接影响脉冲宽度
+ */
 void PWM_SetCompare2(uint16_t Compare)
-	/*
-	这个函数是用来改变占空比的，改变的其实是CCR,虽然占空比是CCR和ARR+1共同决定的，但在此函数中由于ARR为100，
-	根据公式，此时更改CCR的值即可更改占空比，而且其值就等于占空比的百分数
-
-	*/
 {
-	TIM_SetCompare2(TIM2,Compare);
+    /*
+     * 舵机控制参数说明：
+     * 
+     * 舵机角度与CCR值对应关系：
+     * - CCR = 500  → 0.5ms脉宽 → 0°
+     * - CCR = 1500 → 1.5ms脉宽 → 90°（中位）
+     * - CCR = 2500 → 2.5ms脉宽 → 180°
+     * 
+     * 使用示例：
+     * PWM_SetCompare2(1500);  // 舵机转到90°位置
+     * PWM_SetCompare2(500);   // 舵机转到0°位置
+     * PWM_SetCompare2(2500);  // 舵机转到180°位置
+     */
+    
+    TIM_SetCompare2(TIM2, Compare);  // 设置通道2的比较值
 }
+
+/**
+ * @brief 设置PWM预分频系数
+ * @param Prescaler 预分频系数值
+ * @details 通过修改PSC值来改变PWM频率
+ * @note 舵机控制通常不需要改变频率，主要用于特殊应用场合
+ */
 void PWM_SetPrescaler(uint16_t Prescaler)
 {
-	//这是通过改变PSC改变频率的，之所以不改ARR是因为该值与占空比有关
-	TIM_PrescalerConfig(TIM2,Prescaler,TIM_PSCReloadMode_Update);//这是设置PSC的
-	//TIM_PSCReloadMode_Immediate与TIM_PSCReloadMode_Update不同之处在于前者会马上改变PSC的值，后者在更新事件时改变，
-	//前者具有即时性但会导致出现不完整周期，后者有所滞后但保证周期完整，在要求不高时，两者都可
-	
+    /*
+     * 频率调节说明：
+     * 
+     * 为什么通常不改变ARR而改变PSC：
+     * - ARR值与占空比计算直接相关
+     * - 改变ARR会影响现有的占空比设置
+     * - 改变PSC只影响频率，不影响占空比
+     * 
+     * 重载模式选择：
+     * TIM_PSCReloadMode_Immediate：立即更新PSC值
+     * - 优点：响应迅速
+     * - 缺点：产生不完整的PWM周期
+     * 
+     * TIM_PSCReloadMode_Update：更新事件时更新PSC值
+     * - 优点：保证PWM周期完整性
+     * - 缺点：有一定延迟
+     * 
+     * 对于舵机控制，建议使用Update模式保证信号稳定性
+     */
+    
+    TIM_PrescalerConfig(TIM2, Prescaler, TIM_PSCReloadMode_Update);  // 设置PSC值
 }

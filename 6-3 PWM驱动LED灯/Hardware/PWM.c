@@ -1,70 +1,170 @@
-#include "stm32f10x.h"                  // Device header
+#include "stm32f10x.h"                  // 设备头文件
+
+/**
+ * @brief PWM初始化函数
+ * @details 配置TIM2为PWM输出模式，通过PA0引脚输出PWM波形控制LED亮度
+ */
 void PWM_Init(void)
 {
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);//tIM2是APB1总线的外设，所以要开启APB1时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
-//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);
-//	GPIO_PinRemapConfig(GPIO_PartialRemap1_TIM2,ENABLE);//部分重映射，这样PA0就换到PA15了，映射模式见手册的8.3表43
-//	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable,ENABLE);//有的IO口是有其默认功能的要解除其默认功能方能使用，此函数可以用来解出IO口的默认功能
-	/*
-	一、让调试端口变正常端口，用：
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);
-	GPIO_PinRemapConfig(X,ENABLE);
-	二、若想重映射定时器或者其他外设的复用引脚，用：
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);
-	GPIO_PinRemapConfig(GPIO_PartialRemap1_TIM2,ENABLE);
-	三、若重映射的正好是调试端口，上面两种情况代码结合。
-	上函数使得PA15、PB3、PB4变回了正常IO口
-	有的IO口是有其默认功能的要解出其默认功能方能使用，此函数可以用来解出IO口的默认功能
-	比如在此工程中，将PA0口重映射到PA15就需要解除其测试功能，使其变回正常的IO口，
-	注意该参数GPIO_Remap_SWJ_Disable不可随便使用，否则就烧录不进程序了，重新弄回来需要花费一番功夫
-	具体可见手册8.3的表35
-	*/
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF_PP;//复用推挽输出，只有这样，引脚的控制权才能交给偏上外设，PWM波形才能通过引脚输出视频解释在6-4 21分（不太懂）
-	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0;
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA,&GPIO_InitStructure);
-	TIM_InternalClockConfig(TIM2);
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;//TIM_ClockDivision与滤波的频率有关，决定是否对内部时钟进行分频，需滤波强一点，就TIM_CKD_DIV2或者TIM_CKD_DIV4
-	TIM_TimeBaseInitStructure.TIM_RepetitionCounter=0;//此处高级计数器才用到，故直接给零了
-	TIM_TimeBaseInitStructure.TIM_Period=100-1;//ARR,减一是因为预分频器和计数器都有1个数的偏差
-	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;//这里是设置计数器的计数模式的，设置为向上计数
-	TIM_TimeBaseInitStructure.TIM_Prescaler=720-1;//这里是设置预分频器的主频的“切分”，也就是把主频“切”成7200份
-	/*
-	时基单元：PSC(预分频器)、ARR(自动重装器)、CNT(计数器)
-	计数器溢出频率:CK_CNT_OV=CK_CNT/(ARR+1)=CK_PSC/(PSC+1)/(ARR+1)
-	害，实际要计算每次计数时间就相当于1/(接到分频器上的频率(Mhz)*1000000/预分频器的值-1/重装的值-1)
-	例如：现在我接到PSC上的频率为单片机的主频即72Mhz，而PSC的值为7200，即进行7200分频，重装值为10000，即
-	此时根据公式可得：1/(72000000/7200-1+1/10000-1+1)=1s
-	PSC预分配器，对主频72Mhz进行分频，为0表示不分频，即还是72Mhz,为1表示二分频，即72Mhz/2
-	故在此处表示的是进行7200分频，即72Mhz/7200，但不能直接写7200，根据其规则，应该要写7200-1
-	它后面会自己“+1”从而把“-1”给抵消掉
-	另：PSC和ARR都有自己的缓冲寄存器，它们的目的是为了在中断更改相应值的时候不会出现错误，用或不用，可自己设置
-	具体见江协视频6-1 的39分左右
-	另：PSC与ARR的取值范围是0~65535，不能超范围，若预PSC小点，ARR大点，那就是以较高的频率计较多的数
-	若若预PSC大点，ARR小点，那就是以较低的频率计较少的数，但结果是不变的，例如在这里我可以
-	*/
-
-	TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStructure);//初始化通用定时器TIM2的时基单元
-	TIM_OCInitTypeDef TIM_OCInitStructure;
-	TIM_OCStructInit(&TIM_OCInitStructure);//给结构体没用到的参数赋初始值后，再对个别需要用到的参数赋值，这样，可以避免一些问题
-	TIM_OCInitStructure.TIM_OCMode=TIM_OCMode_PWM1;//设置输出比较的模式
-	TIM_OCInitStructure.TIM_OCPolarity=TIM_OCPolarity_High;//设置输出比较的极性
-	TIM_OCInitStructure.TIM_OutputState=TIM_OutputState_Enable;//输出使能
-	TIM_OCInitStructure.TIM_Pulse=0;//CCR,在这里，CCR是改变占空比的，是多少遍百分之多少
-	//结合公式，再根据CCR,ARR,PSC的值可知，此时配置的PWM波为1000Hz，占空比为50%，分辨率为1%
-	TIM_OC1Init(TIM2,&TIM_OCInitStructure);
-	
-	TIM_Cmd(TIM2,ENABLE);//这句相当于给TIM2使能，我的理解是相当于51中的ET0=1;吧
+    /* 
+     * ==================== 1. 时钟与GPIO配置 ====================
+     * 使能所需外设时钟并配置GPIO引脚
+     */
+    
+    // 使能定时器和GPIO时钟
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);   // TIM2挂载在APB1总线上
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);  // PA0引脚需要GPIOA时钟
+    
+    // 引脚重映射相关配置（当前被注释掉）
+    // RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+    // GPIO_PinRemapConfig(GPIO_PartialRemap1_TIM2, ENABLE);  // 部分重映射PA0→PA15
+    // GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE); // 解除调试端口默认功能
+    
+    /*
+     * 引脚重映射说明：
+     * 
+     * 三种常见重映射场景：
+     * 1. 调试端口转普通IO口：
+     *    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+     *    GPIO_PinRemapConfig(X, ENABLE);
+     * 
+     * 2. 定时器引脚重映射：
+     *    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+     *    GPIO_PinRemapConfig(GPIO_PartialRemap1_TIM2, ENABLE);
+     * 
+     * 3. 重映射调试端口时需组合使用上述两种方法
+     * 
+     * 注意事项：
+     * - GPIO_Remap_SWJ_Disable参数慎用，可能导致无法烧录程序
+     * - 详细映射关系请参考手册8.3表35和表43
+     */
+    
+    // 配置PWM输出引脚
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;    // 复用推挽输出模式
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;          // 使用PA0引脚
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;  // 输出速度50MHz
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    /*
+     * GPIO模式说明：
+     * GPIO_Mode_AF_PP = 复用推挽输出
+     * 作用：将引脚控制权交给外设（TIM2），使PWM波形能够正常输出
+     * 类比：就像把方向盘交给自动驾驶系统，让专业的系统来控制
+     */
+    
+    /* 
+     * ==================== 2. 定时器基本参数配置 ====================
+     * 配置TIM2的时基单元参数
+     */
+    
+    TIM_InternalClockConfig(TIM2);  // 配置TIM2使用内部时钟
+    
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+    
+    // 时钟分频配置
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;  // 不分频
+    
+    // 重复计数器（仅高级定时器使用）
+    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+    
+    // 自动重装载值ARR - 决定PWM周期
+    TIM_TimeBaseInitStructure.TIM_Period = 100 - 1;  // PWM周期100个计数单位
+    
+    // 计数模式
+    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;  // 向上计数
+    
+    // 预分频系数PSC - 决定计数频率
+    TIM_TimeBaseInitStructure.TIM_Prescaler = 720 - 1;  // 72MHz/720 = 100kHz
+    
+    /*
+     * PWM参数配置详解：
+     * 
+     * 时基单元组成：PSC(预分频器)、ARR(自动重装器)、CNT(计数器)
+     * 
+     * 本配置产生的PWM特性：
+     * - 系统主频：72MHz
+     * - 预分频后频率：72MHz/720 = 100kHz（计数频率）
+     * - PWM频率：100kHz/100 = 1kHz（1毫秒周期）
+     * - 分辨率：1%（因为ARR=100）
+     * 
+     * 计算公式：
+     * PWM频率 = 计数频率/(ARR+1) = 100kHz/100 = 1kHz
+     * 占空比 = CCR/(ARR+1) × 100%
+     * 
+     * 参数取值范围：0~65535
+     * 配置原则：
+     * - PSC小、ARR大：高频计多数，分辨率高
+     * - PSC大、ARR小：低频计少数，分辨率低
+     */
+    
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);  // 初始化时基单元
+    
+    /* 
+     * ==================== 3. PWM输出通道配置 ====================
+     * 配置输出比较通道实现PWM功能
+     */
+    
+    TIM_OCInitTypeDef TIM_OCInitStructure;
+    TIM_OCStructInit(&TIM_OCInitStructure);  // 初始化结构体默认值
+    
+    // 输出比较模式
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;      // PWM模式1
+    
+    // 输出极性
+    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;  // 高电平有效
+    
+    // 输出使能
+    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;  // 使能输出
+    
+    // 脉冲宽度（占空比控制）
+    TIM_OCInitStructure.TIM_Pulse = 0;  // 初始占空比0%（CCR值）
+    
+    /*
+     * PWM配置说明：
+     * 
+     * 当前配置效果：
+     * - PWM频率：1kHz
+     * - 初始占空比：0%
+     * - 分辨率：1%
+     * - 最大占空比：100%
+     * 
+     * 占空比调节原理：
+     * 占空比 = CCR/(ARR+1) × 100%
+     * 在本配置中：占空比 = CCR/100 × 100% = CCR%
+     * 所以直接修改CCR值就可以改变占空比百分比
+     */
+    
+    TIM_OC1Init(TIM2, &TIM_OCInitStructure);  // 初始化通道1
+    
+    /* 
+     * ==================== 4. 启动定时器 ====================
+     * 最后一步：使能定时器开始PWM输出
+     */
+    TIM_Cmd(TIM2, ENABLE);  // 启动TIM2定时器
 }
-void PWM_SetCompare1(uint16_t Compare)
-	/*
-	这个函数是用来改变占空比的，虽然占空比是CCR和ARR+1共同决定的，但在此函数中由于ARR+1为100，
-	根据公式，此时更改CCR的值即可更改占空比，而且其值就等于占空比的百分数
 
-	*/
+/**
+ * @brief 设置PWM占空比
+ * @param Compare 要设置的比较值（0-100对应0%-100%占空比）
+ * @details 通过修改CCR寄存器值来调节PWM占空比
+ * @note 在当前配置下，参数值直接等于占空比百分比
+ */
+void PWM_SetCompare1(uint16_t Compare)
 {
-	TIM_SetCompare1(TIM2,Compare);
+    /*
+     * 占空比调节说明：
+     * 
+     * 根据PWM配置：
+     * - ARR+1 = 100（自动重装载值）
+     * - 占空比公式：CCR/(ARR+1) × 100%
+     * - 即：占空比 = CCR/100 × 100% = CCR%
+     * 
+     * 使用方法：
+     * PWM_SetCompare1(50);  // 设置50%占空比
+     * PWM_SetCompare1(0);   // 设置0%占空比（全暗）
+     * PWM_SetCompare1(100); // 设置100%占空比（全亮）
+     */
+    
+    TIM_SetCompare1(TIM2, Compare);  // 设置通道1的比较值
 }

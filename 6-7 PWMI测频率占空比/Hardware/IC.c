@@ -1,56 +1,131 @@
-#include "stm32f10x.h"                  // Device header
-/*
-	说明：
-	下限：在原始条件下，PSC=72-1,ARR=65536-1,时测量的最低频率=1M/65536,约为15hz，若频率再低计时器就要溢出了
-	若想降低最低频率的限制，可以加大PSC的值，如此标注频率就会更低，所支持的额最低频率便更低
-	上限：根据要求误差来确定，若要求误差为千分之一时，频率为上限，那么此上限便是：1M/1000=1khz，
-	同理若要求误差为百分之一，则上限频率为1M/100=10khz，若想提高频率上限，可以减小PSC的值，
-	若输入频率过高，可考虑采用测频法，这个区分高与低的值为中界频率，即测频法与测周法误差相等的频率点
-	fm=根号(fc/T)，fc为测周法标准频率，T为测周法阀门时间，具体讲解见江协6-5 17分左右
-	
-*/
+#include "stm32f10x.h"                  // 设备头文件
+
+/**
+ * @brief 输入捕获初始化函数（PWMI模式）
+ * @details 配置TIM3为PWMI模式，同时测量信号频率和占空比
+ * @note 使用两个通道捕获同一信号：通道1测周期，通道2测高电平时间
+ */
 void IC_Init(void)
 {
-	//开启时钟
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
-	//配置GPIO
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_6;
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA,&GPIO_InitStructure);
-	//配置时基
-	TIM_InternalClockConfig(TIM3);
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
-	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;//TIM_ClockDivision与滤波的频率有关，决定是否对内部时钟进行分频，需滤波强一点，就TIM_CKD_DIV2或者TIM_CKD_DIV4
-	TIM_TimeBaseInitStructure.TIM_RepetitionCounter=0;//此处高级计数器才用到，故直接给零了
-	TIM_TimeBaseInitStructure.TIM_Period=65536-1;//ARR,减一是因为预分频器和计数器都有1个数的偏差
-	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;//这里是设置计数器的计数模式的，设置为向上计数
-	TIM_TimeBaseInitStructure.TIM_Prescaler=72-1;//这里是设置预分频器的主频的“切分”，也就是把主频“切”成7200份
-	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);
-	TIM_ICInitTypeDef TIM_ICInitStructure;
-	TIM_ICInitStructure.TIM_Channel=TIM_Channel_1;//选择通道1是因为配置TIM3通道1
-	TIM_ICInitStructure.TIM_ICPolarity=TIM_ICPolarity_Rising;//捕获输入信号上升沿
-	TIM_ICInitStructure.TIM_ICSelection=TIM_ICSelection_DirectTI;//直连通道
-	TIM_ICInitStructure.TIM_ICPrescaler=TIM_ICPSC_DIV1;//不对输入信号分频
-	TIM_ICInitStructure.TIM_ICFilter=0xf;//滤波值
-	TIM_PWMIConfig(TIM3,&TIM_ICInitStructure);
-	//这个函数可进行相反的配置，上面对一个通道进行配置，此函数可在配置配置一个通道的同时按相反的方向配置另一个通道
-	//以上配置实现了，两个通道（1和2）同时捕获同一个引脚的的信号，两个通道捕获捕获同一个信号可求出出其占空比和频率
-	TIM_SelectInputTrigger(TIM3,TIM_TS_TI1FP1);
-	TIM_SelectSlaveMode(TIM3,TIM_SlaveMode_Reset);
-	TIM_Cmd(TIM3,ENABLE);
+    /* 
+     * ==================== 1. 时钟配置 ====================
+     * 使能定时器和GPIO所需时钟
+     */
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);   // TIM3挂载在APB1总线上
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);  // PA6引脚需要GPIOA时钟
+    
+    /* 
+     * ==================== 2. GPIO引脚配置 ====================
+     * 配置输入捕获引脚
+     */
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;     // 上拉输入模式
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;         // 使用PA6引脚(TI3_CH1)
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 输入速度50MHz
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    /* 
+     * ==================== 3. 定时器时基配置 ====================
+     * 配置TIM3的基本工作参数
+     */
+    TIM_InternalClockConfig(TIM3);  // 配置TIM3使用内部时钟
+    
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+    
+    // 时钟分频配置
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;  // 不分频
+    
+    // 重复计数器（仅高级定时器使用）
+    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
+    
+    // 自动重装载值ARR - 设置为最大值防止溢出
+    TIM_TimeBaseInitStructure.TIM_Period = 65536 - 1;  // 16位计数器最大值
+    
+    // 计数模式
+    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;  // 向上计数
+    
+    // 预分频系数PSC - 决定计数频率
+    TIM_TimeBaseInitStructure.TIM_Prescaler = 72 - 1;  // 72MHz/72 = 1MHz
+    
+    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);  // 初始化时基单元
+    
+    /* 
+     * ==================== 4. PWMI模式配置 ====================
+     * 配置输入捕获单元实现PWMI功能
+     */
+    TIM_ICInitTypeDef TIM_ICInitStructure;
+    
+    // 通道选择
+    TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;        // 使用通道1
+    
+    // 极性选择
+    TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_Rising;  // 捕获上升沿
+    
+    // 输入选择
+    TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;  // 直连输入
+    
+    // 输入分频
+    TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;   // 不分频
+    
+    // 数字滤波
+    TIM_ICInitStructure.TIM_ICFilter = 0xF;  // 最强滤波(15个采样周期)
+    
+    // PWMI模式配置：同时配置通道1和通道2
+    TIM_PWMIConfig(TIM3, &TIM_ICInitStructure);
+    
+    /*
+     * PWMI模式原理：
+     * - 通道1：捕获上升沿，测量完整周期
+     * - 通道2：捕获下降沿，测量高电平时间
+     * - 占空比 = 高电平时间 / 周期时间
+     */
+    
+    /* 
+     * ==================== 5. 主从模式配置 ====================
+     * 配置触发和复位机制
+     */
+    TIM_SelectInputTrigger(TIM3, TIM_TS_TI1FP1);  // 选择TI1FP1作为触发源
+    TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);  // 复位模式：捕获时自动清零CNT
+    
+    /* 
+     * ==================== 6. 启动定时器 ====================
+     */
+    TIM_Cmd(TIM3, ENABLE);  // 启动TIM3定时器
 }
 
+/**
+ * @brief 获取测量频率值
+ * @return uint32_t 测量到的频率值(Hz)
+ * @details 使用测周法计算频率：fx = fc/N
+ * @note fc = 1MHz, N为周期计数值
+ */
 uint32_t IC_GetFreq(void)
 {
-	return 1000000/(TIM_GetCapture1(TIM3)+1);//出现1001Hz可能原因，计数到1000Hz时，信号也刚好跳变，导致这个数刚好没计到，才会有一点误差
+    // fx = fc/N = 1000000/(周期计数值+1)
+    return 1000000 / (TIM_GetCapture1(TIM3) + 1);
 }
 
+/**
+ * @brief 获取测量占空比
+ * @return uint32_t 占空比百分比值(0-100)
+ * @details 占空比 = (高电平时间/周期时间) × 100%
+ */
 uint32_t IC_GetDuty(void)
 {
-	return (TIM_GetCapture2(TIM3)+1)*100/(TIM_GetCapture1(TIM3)+1);//因为高电平的计数值在CRR2里，整个周期的计数值在CRR1里
-	//原始函数应该是：TIM_GetCapture2(TIM3)/(TIM_GetCapture1(TIM3))严格对应CRR2/CEE1，但是这样的话范围为0~1，不够直观，故
-	//给CRR2*100，这样范围就是0~100了，而+1是“误差修正”，具体解释同6-6的IC函数末尾
+    /*
+     * 占空比计算公式：
+     * Duty% = (CCR2/CCR1) × 100%
+     * 
+     * 其中：
+     * CCR1 = 周期计数值（通道1捕获）
+     * CCR2 = 高电平时间计数值（通道2捕获）
+     * 
+     * +1修正：补偿硬件计数从0开始的偏差
+     * ×100：转换为百分比形式
+     */
+    
+    uint32_t period = TIM_GetCapture1(TIM3) + 1;   // 周期计数值
+    uint32_t high_time = TIM_GetCapture2(TIM3) + 1; // 高电平时间计数值
+    
+    return (high_time * 100) / period;
 }

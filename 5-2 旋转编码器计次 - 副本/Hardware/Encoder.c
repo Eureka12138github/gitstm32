@@ -42,6 +42,8 @@ int16_t Encoder_Get(void)
 	/*
 	240430：不一定要清零，这里清零主要是为了配合主函数中的逻辑，
 	若将Num+=Encoder_Get();改为Num=Encoder_Get();这里就不用清零，直接返回Encoder_Count即可
+	
+	！！！上面说法是错误的！！！还是要清零，不清的话，会一直返回旧值！
 	*/
 	temp=Encoder_Count;
 	Encoder_Count=0;

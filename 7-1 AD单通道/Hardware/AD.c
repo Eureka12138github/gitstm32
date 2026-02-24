@@ -1,58 +1,99 @@
-#include "stm32f10x.h"                  // Device header
+#include "stm32f10x.h"                  // 设备头文件
+
+/**
+ * @brief ADC初始化函数
+ * @details 配置ADC1为单通道连续转换模式，用于采集PA0引脚的模拟信号
+ * @note 采用右对齐数据格式，12位分辨率
+ */
 void AD_Init(void)
 {
-	//开启时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1,ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
-	
-	RCC_ADCCLKConfig(RCC_PCLK2_Div6);//选择6分频，分频后ADCCLK=72MHZ/6=12MHZ，这里为什么这样配置暂时还不理解240513
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AIN;
-	/*
-	选择模拟输入模式，该模式下GPIO口是无效的，相当于断开GPIO，防止GPIO口的输入对模拟电压
-	造成干扰，AIN模式就是ADC的专用模式
-	*/
-	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0;//具体用哪个引脚要看引脚定义图
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA,&GPIO_InitStructure);
-	//配置ADC
-	ADC_RegularChannelConfig(ADC1,ADC_Channel_0,1,ADC_SampleTime_55Cycles5);//"填充菜单列表"，在序列1位置写入通道0
-	//关于采样时间，若需要更快的转换，则采用小的参数，需稳定则采用大的参数
-	ADC_InitTypeDef ADC_InitStructure;
-	ADC_InitStructure.ADC_Mode=ADC_Mode_Independent;//选择独立模式
-	ADC_InitStructure.ADC_ScanConvMode=DISABLE;//指定扫描模式为单通道
-	//ADC_InitStructure.ADC_ContinuousConvMode=DISABLE;//指定转换模式为单次模式
-	ADC_InitStructure.ADC_ContinuousConvMode=ENABLE;
-	ADC_InitStructure.ADC_ExternalTrigConv=ADC_ExternalTrigConv_None;//触发源选择软件触发
-	ADC_InitStructure.ADC_DataAlign=ADC_DataAlign_Right;//数据对齐选择右对齐
-	ADC_InitStructure.ADC_NbrOfChannel=1;//通道数目为1，此参数在多通道模式下才真正起作用，单通道默认只有序列1位置有效
-	ADC_Init(ADC1,&ADC_InitStructure);
-	ADC_Cmd(ADC1,ENABLE);//开启ADC电源
-	//下面是ADC校准，这样会使得转换更加精确
-	ADC_ResetCalibration(ADC1);//复位校准
-	while(ADC_GetResetCalibrationStatus(ADC1)==SET);//若复位校准未完成，则在此等待
-	/*ADC_GetResetCalibrationStatus这个函数似乎是用来获取复位校准的标志位的，若在
-	校准，则返回值为SET(即1)，否则返回RESET(即0)
-	*/
-	ADC_StartCalibration(ADC1);//开始校准
-	while(ADC_GetCalibrationStatus(ADC1)==SET);//等待校准完成
-	ADC_SoftwareStartConvCmd(ADC1,ENABLE);//在连续转换只需在开始时初始化一次便可
+    /* 
+     * ==================== 1. 时钟配置 ====================
+     * 使能ADC和GPIO所需时钟
+     */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);   // 使能ADC1时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);  // 使能GPIOA时钟
+    
+    // 配置ADC时钟分频：PCLK2/6 = 72MHz/6 = 12MHz
+    // ADC最大工作频率为14MHz，12MHz在安全范围内
+    RCC_ADCCLKConfig(RCC_PCLK2_Div6);
+    
+    /* 
+     * ==================== 2. GPIO引脚配置 ====================
+     * 配置ADC输入引脚
+     */
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;      // 模拟输入模式
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;          // 使用PA0引脚
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;  // 输入速度50MHz
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    /*
+     * AIN模式说明：
+     * - 断开GPIO数字电路，避免数字噪声干扰模拟信号
+     * - 专为ADC设计的输入模式
+     * - 确保模拟信号完整性
+     */
+    
+    /* 
+     * ==================== 3. ADC参数配置 ====================
+     * 配置ADC基本工作参数
+     */
+    ADC_InitTypeDef ADC_InitStructure;
+    
+    // 工作模式：独立模式（单ADC）
+    ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+    
+    // 扫描模式：单通道（不扫描）
+    ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+    
+    // 转换模式：连续转换（自动重复转换）
+    ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+    
+    // 触发源：软件触发（无需外部触发）
+    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+    
+    // 数据对齐：右对齐（低12位有效）
+    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+    
+    // 通道数量：1个通道
+    ADC_InitStructure.ADC_NbrOfChannel = 1;
+    
+    ADC_Init(ADC1, &ADC_InitStructure);  // 初始化ADC
+    
+    /* 
+     * ==================== 4. 通道配置 ====================
+     * 配置具体采样通道
+     */
+    // 配置通道0（PA0），采样时间55.5个周期
+    // 采样时间越长，精度越高，但转换速度越慢
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_55Cycles5);
+    
+    /* 
+     * ==================== 5. ADC启动与校准 ====================
+     */
+    ADC_Cmd(ADC1, ENABLE);  // 开启ADC电源
+    
+    // ADC校准流程
+    ADC_ResetCalibration(ADC1);  // 复位校准寄存器
+    while(ADC_GetResetCalibrationStatus(ADC1) == SET);  // 等待复位完成
+    
+    ADC_StartCalibration(ADC1);  // 开始校准
+    while(ADC_GetCalibrationStatus(ADC1) == SET);  // 等待校准完成
+    
+    // 启动连续转换
+    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 }
 
+/**
+ * @brief 获取ADC转换值
+ * @return uint16_t 12位ADC转换结果（0-4095）
+ * @details 在连续转换模式下，直接读取最新转换结果
+ * @note 返回值范围：0（0V）到4095（参考电压）
+ */
 uint16_t AD_GetValue(void)
 {
-	//ADC_SoftwareStartConvCmd(ADC1,ENABLE);//软件触发转换
-	//while(ADC_GetFlagStatus(ADC1,ADC_FLAG_EOC)==RESET);	
-	//连续转换模式下，此时数据寄存器会连续不断刷新最新的转换结果，所以就无需判断标志位了
-	/*
-	等待转换完成，等待时间根据前面的配置，计算出大概为5.6us，具体计算方法见江协7-2的29分左右
-	ADC_GetFlagStatus(ADC1,ADC_FLAG_EOC)函数用来获取规则组转换完成标志位
-	RESET表示还在转换，而SET表示转换已经完成
-	*/
-	return ADC_GetConversionValue(ADC1);
-	/*
-	返回转换的结果
-	ADC_GetConversionValue(ADC1)是用来获取转换结果的
-	获取了结果它会自动将标志位清零
-	*/
+    // 连续转换模式下，数据寄存器持续更新
+    // 无需等待转换完成标志，直接读取最新值
+    return ADC_GetConversionValue(ADC1);
 }

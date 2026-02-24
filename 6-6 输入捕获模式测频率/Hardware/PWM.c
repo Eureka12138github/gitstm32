@@ -77,3 +77,4 @@ void PWM_SetPrescaler(uint16_t Prescaler)
 	//前者具有即时性但会导致出现不完整周期，后者有所滞后但保证周期完整，在要求不高时，两者都可
 	
 }
+

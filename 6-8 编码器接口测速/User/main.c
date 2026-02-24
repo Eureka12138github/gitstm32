@@ -1,34 +1,74 @@
-#include "stm32f10x.h"                 // Device header
-#include "Delay.h"
-#include "LED.h"
-#include "OLED.h"
-#include "Timer.h"
-#include "Encoder.h"
-int16_t Speed;
+/**
+ ******************************************************************************
+ * @file    main.c
+ * @author  
+ * @version V1.0
+ * @date    2024年
+ * @brief   编码器测速系统（定时器中断方式）
+ ******************************************************************************
+ * @details 
+ * 功能概述：
+ * 本程序使用TIM3编码器接口模式测量旋转编码器转速，
+ * 通过TIM2定时器中断定期读取编码器计数值，
+ * 并在OLED上显示当前转速（带方向信息）。
+ * 
+ * 硬件连接：
+ * - PA6、PA7：编码器A、B相信号输入
+ * - TIM3：编码器接口模式
+ * - TIM2：定时中断用于周期性读取
+ * - OLED：显示转速信息
+ * 
+ * 技术特点：
+ * - 硬件编码器接口：自动处理相位检测和方向判断
+ * - 定时器中断读取：避免主循环阻塞，提高实时性
+ * - 带符号显示：正数表示正转，负数表示反转
+ ******************************************************************************
+ */
+
+#include "stm32f10x.h"                 // STM32F10x系列设备头文件
+#include "Delay.h"                     // 延时函数库
+#include "LED.h"                       // LED驱动库
+#include "OLED.h"                      // OLED显示驱动库
+#include "Timer.h"                     // 定时器配置库
+#include "Encoder.h"                   // 编码器测速库
+
+/* 全局变量 */
+int16_t Speed;  // 存储编码器计数值（带符号，正负表示方向）
+
+/**
+ * @brief 主函数
+ * @details 程序入口点
+ */
 int main(void)
 {
-	OLED_Init();
-	Encoder_Init();
-	Timer_Init();
-	OLED_ShowString(1,1,"CNT:");
-	while(1)
-	{
-	OLED_ShowSignedNum(1,7,Speed,5);
-//	OLED_ShowNum(2,5,TIM_GetCounter(TIM2),5);	
-	}
+    // 系统初始化
+    OLED_Init();        // 初始化OLED显示屏
+    Encoder_Init();     // 初始化编码器接口（TIM3）
+    Timer_Init();       // 初始化定时器（TIM2，1秒周期中断）
+    
+    // 显示界面初始化
+    OLED_ShowString(1, 1, "CNT:");  // 显示计数标签
+    
+    // 主循环 - 实时刷新显示
+    while(1)
+    {
+        OLED_ShowSignedNum(1, 7, Speed, 5);  // 显示带符号的计数值
+        // 注意：无需Delay，因为读取由中断完成，主循环非阻塞
+    }
 }
 
+/**
+ * @brief TIM2定时器更新中断服务函数
+ * @details 每1秒执行一次，读取编码器计数值
+ * @note 中断服务函数必须放在main.c中，不能放在头文件里
+ */
 void TIM2_IRQHandler(void)
 {
-	if(TIM_GetITStatus(TIM2,TIM_IT_Update)==SET)
-	{
-		Speed=Encoder_Get();//每隔1秒读取，存在Speed变量里，如此在主循环便可快速刷新Speed了，此时可去掉主循环中的Delay，减少阻塞
-		TIM_ClearITPendingBit(TIM2,TIM_IT_Update);
-	}
+    if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
+    {
+        // 读取编码器计数值并清零
+        Speed = Encoder_Get();  // 获取当前计数值（已清零）
+        
+        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);  // 清除中断标志
+    }
 }
-//未完成任务：用定时器实现旋转编码器计次20240513
-/*
-	快速完成负数转换技巧：
-	将返回的格式uint16_t改为int16_t，h文件声明也改成int16_t之后在主函数中调用相关函数
-	这时候的值可以是负数了，原来是0到65526，现在是0到负数
-*/
