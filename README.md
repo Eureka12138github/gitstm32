@@ -1,218 +1,74 @@
-# STM32 标准库项目模板合集
+# STM32 Standard Peripheral Library Templates
 
-> 基于 STM32F103 系列微控制器的标准外设库学习项目，包含 50+ 个功能模板示例。
+> A collection of 50+ STM32F103 project templates based on Standard Peripheral Library (SPL) V3.5.0
 
-## 📁 目录结构
-
-本项目采用**单体仓库 + 分类目录**的组织方式，所有模板共享同一套工程框架，便于代码复用和统一管理。
+## 📦 Project Structure
 
 ```
 STM32-StdPeriph-Templates/
-├── 00-Common/           # 公共基础（工程模板、接线图、代码规范）
-├── 01-Basic/            # 基础外设（GPIO、OLED、红外传感器）
-├── 02-Communication/    # 通信协议（UART、I2C、SPI）
-├── 03-Timer/            # 定时器（中断、PWM、输入捕获、编码器）
-├── 04-ADC-DMA/          # ADC 与 DMA（数据采集、DMA 传输）
-├── 05-Advanced/         # 高级功能（RTC、低功耗、看门狗、FLASH）
-└── 99-Tools/            # 工具资料（下载工具、疑难解答、模块学习）
+├── 00-Common/           # Common resources (templates, wiring diagrams)
+├── 01-Basic/            # Basic peripherals (GPIO, OLED, sensors)
+├── 02-Communication/    # Communication protocols (UART, I2C, SPI)
+├── 03-Timer/            # Timers (Interrupts, PWM, Encoders)
+├── 04-ADC-DMA/          # Data acquisition (ADC, DMA)
+├── 05-Advanced/         # Advanced features (RTC, Low-power, Watchdog)
+└── 99-Tools/            # Tools and resources
 ```
 
----
+## 🚀 Quick Start
 
-## 📚 模板索引
+### Prerequisites
+- **IDE**: Keil MDK-ARM v5.x
+- **Device**: STM32F103C8T6/ZET6/VCT6
+- **Debugger**: ST-Link V2 / J-Link
 
-### 00-Common - 公共基础
-
-| 文件夹 | 功能说明 | 难度 |
-|--------|----------|------|
-| [1-0 代码结构模板](00-Common/1-0%20代码结构模板/) | 推荐的代码组织结构 | ⭐ |
-| [1-1 接线图](00-Common/1-1%20接线图/) | 硬件连接示意图 | ⭐ |
-| [2-1 STM32 工程模版](00-Common/2-1%20STM32 工程模版/) | Keil MDK 工程基础模板 | ⭐ |
-
-**使用建议**：初次使用时先阅读 `1-0 代码结构模板` 了解项目组织方式，参考 `1-1 接线图` 完成硬件连接。
-
----
-
-### 01-Basic - 基础外设
-
-| 文件夹 | 功能说明 | 关键知识点 | 难度 |
-|--------|----------|------------|------|
-| [3-1 LED闪烁](01-Basic/3-1%20LED闪烁/) | GPIO 输出控制 LED | GPIO 推挽输出 | ⭐ |
-| [3-2 LED 流水灯](01-Basic/3-2%20LED 流水灯/) | 多 LED 顺序点亮 | GPIO 批量操作 | ⭐ |
-| [3-3 蜂鸣器](01-Basic/3-3%20蜂鸣器/) | 蜂鸣器驱动 | GPIO 频率控制 | ⭐ |
-| [3-4 按键控制 LED](01-Basic/3-4%20按键控制 LED/) | 按键输入检测 | GPIO 上拉/下拉输入 | ⭐⭐ |
-| [3-5 红外线控制蜂鸣器](01-Basic/3-5%20红外线控制蜂鸣器/) | 红外传感器应用 | 数字输入 + 输出联动 | ⭐⭐ |
-| [4-1 OLED 显示屏](01-Basic/4-1%20OLED 显示屏/) | OLED 屏幕驱动 | SPI/I2C 显示协议 | ⭐⭐⭐ |
-| [4-2 OLED 显示屏 - 中文显示](01-Basic/4-2%20OLED 显示屏%20-%20中文显示/) | OLED 汉字显示 | 字模提取、中文字库 | ⭐⭐⭐ |
-| [4-3 轻量型 OLED UI](01-Basic/4-3%20轻量型 OLED UI（待优化）/) | 简易 UI 框架 | 图形界面设计 | ⭐⭐⭐⭐ |
-| [5-1 对射式红外传感器计次](01-Basic/5-1%20对射式红外传感器计次/) | 物体计数应用 | 外部中断、状态检测 | ⭐⭐ |
-
-**学习路线**：LED → 蜂鸣器 → 按键 → 红外传感器 → OLED 显示
-
----
-
-### 02-Communication - 通信协议
-
-| 文件夹 | 功能说明 | 关键知识点 | 难度 |
-|--------|----------|------------|------|
-| [9-1 串口发送](02-Communication/9-1%20串口发送/) | UART 数据发送 | USART 配置、printf重定向 | ⭐⭐ |
-| [9-2 串口发送与接收](02-Communication/9-2%20串口发送与接收/) | UART 全双工通信 | 接收中断处理 | ⭐⭐ |
-| [9-3 串口收发 Hex 数据包](02-Communication/9-3%20串口收发 Hex 数据包/) | 二进制数据传输 | 数据帧格式解析 | ⭐⭐⭐ |
-| [9-4 串口收发文本数据包](02-Communication/9-4%20串口收发文本数据包/) | 文本协议通信 | 字符串处理、协议解析 | ⭐⭐⭐ |
-| [10-1 软件 I2C 读写 MPU6050](02-Communication/10-1%20软件 I2C 读写 MPU6050/) | 软件模拟 I2C | GPIO 时序模拟、MPU6050驱动 | ⭐⭐⭐⭐ |
-| [10-2 硬件 I2C 读写 MPU6050](02-Communication/10-2%20硬件 I2C 读写 MPU6050/) | 硬件 I2C 外设 | I2C 外设寄存器配置 | ⭐⭐⭐ |
-| [11-1 软件 SPI 读写 W25Q64](02-Communication/11-1%20软件 SPI 读写 W25Q64/) | 软件模拟 SPI | FLASH 存储、SPI 时序 | ⭐⭐⭐⭐ |
-| [11-2 硬件 SPI 读写 W25Q64](02-Communication/11-2%20硬件 SPI 读写 W25Q64/) | 硬件 SPI 外设 | SPI 外设、FLASH 文件系统 | ⭐⭐⭐ |
-
-**学习路线**：UART 基础 → UART 协议 → I2C 软件模拟 → I2C 硬件 → SPI 软件模拟 → SPI 硬件
-
----
-
-### 03-Timer - 定时器
-
-| 文件夹 | 功能说明 | 关键知识点 | 难度 |
-|--------|----------|------------|------|
-| [6-1 定时器中断（内部触发）](03-Timer/6-1%20定时器中断（内部触发）/) | 基本定时功能 | 定时器溢出中断 | ⭐⭐ |
-| [6-1-1 按键单击双击三击长按](03-Timer/6-1-1%20按键单击双击三击长按/) | 复杂按键识别 | 定时器 + 状态机 | ⭐⭐⭐⭐ |
-| [6-2 定时器中断（外部触发）](03-Timer/6-2%20定时器中断（外部触发）/) | 外部信号触发 | 门控模式、触发源 | ⭐⭐⭐ |
-| [6-3 PWM 驱动 LED 灯](03-Timer/6-3%20PWM 驱动 LED 灯/) | PWM 调光 | PWM 原理、占空比控制 | ⭐⭐ |
-| [6-4 PWM 驱动舵机](03-Timer/6-4%20PWM 驱动舵机/) | 舵机角度控制 | PWM 脉宽调制 | ⭐⭐⭐ |
-| [6-5 PWM 驱动直流电机](03-Timer/6-5%20PWM 驱动直流电机/) | 电机调速 | H 桥驱动、PWM 频率选择 | ⭐⭐⭐ |
-| [6-6 输入捕获模式测频率](03-Timer/6-6%20输入捕获模式测频率/) | 信号频率测量 | 输入捕获、边沿检测 | ⭐⭐⭐⭐ |
-| [6-7 PWMI 测频率占空比](03-Timer/6-7%20PWMI 测频率占空比/) | PWM 信号分析 | 双通道捕获、周期/脉宽计算 | ⭐⭐⭐⭐ |
-| [6-8 编码器接口测速](03-Timer/6-8%20编码器接口测速/) | 旋转编码器解码 | 正交编码、方向判别 | ⭐⭐⭐⭐ |
-| [6-9 定时器测量函数执行时间](03-Timer/6-9%20定时器测量函数执行时间/) | 代码性能分析 | 高精度计时、微秒延时 | ⭐⭐⭐ |
-| [5-2 旋转编码器计次](03-Timer/5-2%20旋转编码器计次/) | 编码器计数应用 | 定时器编码器模式 | ⭐⭐⭐ |
-
-**学习路线**：基本定时 → PWM 输出 → 输入捕获 → 编码器接口
-
----
-
-### 04-ADC-DMA - 数据采集与传输
-
-| 文件夹 | 功能说明 | 关键知识点 | 难度 |
-|--------|----------|------------|------|
-| [7-1 AD 单通道](04-ADC-DMA/7-1%20AD 单通道/) | 单通道模拟量采集 | ADC 配置、采样转换 | ⭐⭐ |
-| [7-2 AD 多通道](04-ADC-DMA/7-2%20AD 多通道/) | 多通道扫描采集 | 规则组、连续转换 | ⭐⭐⭐ |
-| [8-1 DMA 数据转运](04-ADC-DMA/8-1%20DMA 数据转运/) | DMA 内存传输 | DMA 通道配置、直接存储器访问 | ⭐⭐⭐ |
-| [8-2 DMA+AD 多通道](04-ADC-DMA/8-2%20DMA+AD 多通道/) | ADC+DMA 联合采集 | 自动传输、循环缓冲 | ⭐⭐⭐⭐ |
-
-**学习路线**：ADC 单通道 → ADC 多通道 → DMA 基础 → ADC+DMA 组合
-
----
-
-### 05-Advanced - 高级功能
-
-| 文件夹 | 功能说明 | 关键知识点 | 难度 |
-|--------|----------|------------|------|
-| [12-1 读写备份寄存器](05-Advanced/12-1%20读写备份寄存器/) | 备份寄存器应用 | BKP 寄存器、断电保存 | ⭐⭐ |
-| [12-2 实时时钟](05-Advanced/12-2%20实时时钟/) | RTC 时钟功能 | RTC 配置、日历实现 | ⭐⭐⭐ |
-| [13-1 修改主频](05-Advanced/13-1%20修改主频/) | 系统时钟配置 | PLL、RCC 配置、超频 | ⭐⭐⭐⭐ |
-| [13-2 睡眠模式 + 串口发送 + 接收](05-Advanced/13-2%20睡眠模式 + 串口发送 + 接收/) | 睡眠低功耗 | 睡眠模式、唤醒源 | ⭐⭐⭐ |
-| [13-3 停止模式 + 对射式红外传感器计次](05-Advanced/13-3%20停止模式 + 对射式红外传感器计次/) | 停止低功耗 | 停止模式、EXTI 唤醒 | ⭐⭐⭐⭐ |
-| [13-4 待机模式 + 实时时钟](05-Advanced/13-4%20待机模式 + 实时时钟/) | 待机低功耗 | 待机模式、RTC 保持运行 | ⭐⭐⭐⭐ |
-| [14-1 独立看门狗](05-Advanced/14-1%20独立看门狗/) | IWDG 复位保护 | 独立看门狗、喂狗机制 | ⭐⭐ |
-| [14-2 窗口看门狗](05-Advanced/14-2%20窗口看门狗/) | WWDG 精确监控 | 窗口看门狗、时间窗口 | ⭐⭐⭐ |
-| [15-1 读取内部 FLASH](05-Advanced/15-1%20读取内部 FLASH/) | 片内 FLASH 读写 | FLASH 编程、页擦除 | ⭐⭐⭐⭐ |
-| [15-2 读取芯片 ID](05-Advanced/15-2%20读取芯片 ID/) | 唯一设备标识 | UID 寄存器、产品标识 | ⭐⭐ |
-
-**学习路线**：备份寄存器 → RTC → 看门狗 → 低功耗模式 → 系统时钟 → FLASH
-
----
-
-### 99-Tools - 工具资料
-
-| 文件夹 | 功能说明 |
-|--------|----------|
-| [9-6 FlyMcu 串口下载&Stlink Utility](99-Tools/9-6%20FlyMcu 串口下载&Stlink%20Utility/) | 程序下载工具汇总 |
-| [STM32 疑难杂症](99-Tools/STM32 疑难杂症/) | 常见问题解决方案 |
-| [VOFA 测试](99-Tools/VOFA 测试/) | VOFA+ 串口调试工具使用 |
-| [X-1 51 程序移植（DS18B20 温度读取）](99-Tools/X-1%2051 程序移植（DS18B20 温度读取）/) | 51→STM32 代码移植参考 |
-| [模块学习](99-Tools/模块学习/) | 各类模块学习资料 |
-| [练习](99-Tools/练习/) | 个人练习代码 |
-
----
-
-## 🚀 快速开始
-
-### 1. 克隆仓库
-
+### Get Started
 ```bash
-# 完整克隆
+# Clone repository
 git clone https://github.com/YOUR_USERNAME/STM32-StdPeriph-Templates.git
 
-# 或浅克隆（仅最新提交，加快速度）
-git clone --depth=1 https://github.com/YOUR_USERNAME/STM32-StdPeriph-Templates.git
+# Open project
+cd STM32-StdPeriph-Templates
+# Open .uvprojx file in Keil MDK
+
+# Build & Flash
+Press F7 to build → Ctrl+F8 to flash
 ```
 
-### 2. 环境要求
+## 📋 Template Categories
 
-- **IDE**: Keil MDK-ARM v5.x
-- **器件**: STM32F103C8T6 / ZET6 / VCT6 等 F103 系列
-- **固件库**: STM32 Standard Peripheral Library V3.5.0
-- **调试器**: ST-Link V2 / J-Link / DAP-Link
+### Basic Peripherals
+LED Blink, LED Chaser, Buzzer, Button Control, IR Sensor Counter, OLED Display (English/Chinese/UI Framework)
 
-### 3. 使用步骤
+### Communication Protocols
+UART (TX/RX, Hex/Text Packets), I2C (Software/Hardware - MPU6050), SPI (Software/Hardware - W25Q64 FLASH)
 
-1. 打开对应模板文件夹中的 `.uvprojx` 工程文件
-2. 检查工程配置（Target → Device → STM32F103xx）
-3. 编译项目（F7），确保无错误
-4. 连接开发板和调试器
-5. 下载程序到开发板（Ctrl+F8）
+### Timers & PWM
+Basic Timer Interrupts, PWM (LED Dimming, Servo, Motor), Input Capture (Frequency Measurement), Encoder Interface, Complex Button Detection (Single/Double/Triple Click, Long Press)
 
----
+### ADC & DMA
+Single/Multi-channel ADC, DMA Transfer, ADC+DMA Combined Acquisition
 
-## 📋 Git 使用指南
+### Advanced Features
+Backup Registers, RTC Real-Time Clock, System Clock Configuration, Low-Power Modes (Sleep/Stop/Standby), Independent/Window Watchdog, Internal FLASH, Chip ID
 
-### .gitignore 说明
+### Tools & Resources
+Download Tools (FlyMcu/ST-Link), Troubleshooting Guides, VOFA+ Debugging, DS18B20 Temperature Module
 
-本项目已配置完整的 `.gitignore` 规则，自动忽略以下文件：
+## 💡 Usage Notes
 
-- ✅ Keil 编译产物（`.o`, `.axf`, `.hex`, `Objects/`, `Listings/`）
-- ✅ 用户配置文件（`.uvoptx`, `.uvguix.*`）
-- ✅ 调试日志和临时文件
+- Each template is a standalone Keil project - open `.uvprojx` to get started
+- Refer to `00-Common/1-1 Wiring Diagrams/` for hardware connections
+- All build artifacts (`Objects/`, `Listings/`, `*.uvoptx`) are gitignored
 
-### 推荐工作流
+## 📚 Reference
 
-```bash
-# 1. 开始新模板前，从 main 分支创建功能分支
-git checkout -b feature/my-new-template
+- **Primary Course**: [Jiang Xie Ke Ji STM32 Tutorial](https://www.bilibili.com/list/ml1454946110)
+- **Library**: STM32 Standard Peripheral Library V3.5.0
 
-# 2. 复制基础模板并修改
-cp -r 00-Common/2-1\ STM32 工程模版/ 01-Basic/我的新模板/
+## 📄 License
 
-# 3. 提交更改
-git add .
-git commit -m "feat: 添加 XXX 功能模板"
-
-# 4. 推送并创建 Pull Request
-git push origin feature/my-new-template
-```
-
----
-
-## 🤝 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-- 💡 **添加新模板**: 请按照现有目录结构组织代码
-- 🐛 **修复 Bug**: 描述问题现象和复现步骤
-- 📖 **文档改进**: 补充注释、完善 README
-
----
-
-## 📄 许可证
-
-本项目采用 [MIT License](LICENSE)
-
----
-
-## 🔗 相关资源
-
-- [STM32F103 参考手册](https://www.st.com/resource/en/reference_manual/rm0008-stm32f101xx-stm32f102xx-stm32f103xx-stm32f105xx-and-stm32f107xx-advanced-armbased-32bit-mcus-stmicroelectronics.pdf)
-- [STM32 标准外设库用户手册](https://www.st.com/resource/en/user_manual/um0736-stm32-standard-peripheral-library-user-manual-stmicroelectronics.pdf)
-- [野火 STM32 教程](https://doc.embedfire.com/mcu/stm32/f103zhinan/index.html)
-- [原子哥 STM32 入门教程](https://www.openedv.com/docs/boards/arm/stm32/new-stm32.html)
+MIT License
 
 ---
 
