@@ -151,6 +151,7 @@ gitstm32/
 ### .gitignore Configuration
 
 The following are gitignored:
+
 - Keil build artifacts (`.o`, `.axf`, `.hex`, `Objects/`, `Listings/`)
 - User config files (`.uvoptx`, `.uvguix.*`)
 - Debug logs and temporary files
@@ -170,7 +171,7 @@ git push
 
 ## Learning Path Recommendation
 
-```
+```text
 Beginner → 01-Basic (LED/Button) 
          ↓
 Intermediate → 02-Communication (UART/I2C/SPI) 
@@ -190,8 +191,4 @@ Expert → 04-ADC-DMA + 05-Advanced
 
 ---
 
-<div align="center">
-
 **Happy Coding & Learning!** 🚀
-
-</div>
