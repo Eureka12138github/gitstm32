@@ -18,6 +18,7 @@ STM32-StdPeriph-Templates/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **IDE**: Keil MDK-ARM v5.x
 - **Device**: STM32F103C8T6/ZET6/VCT6
 - **Debugger**: DAP-Link / ST-Link V2 / J-Link
@@ -35,21 +36,27 @@ cd gitstm32
 ## 📋 Template Categories
 
 ### Basic Peripherals
+
 LED Blink, LED Chaser, Buzzer, Button Control, IR Sensor Counter, OLED Display (English/Chinese/UI Framework)
 
 ### Communication Protocols
+
 UART (TX/RX, Hex/Text Packets), I2C (Software/Hardware - MPU6050), SPI (Software/Hardware - W25Q64 FLASH)
 
 ### Timers & PWM
+
 Basic Timer Interrupts, PWM (LED Dimming, Servo, Motor), Input Capture (Frequency Measurement), Encoder Interface, Complex Button Detection (Single/Double/Triple Click, Long Press)
 
 ### ADC & DMA
+
 Single/Multi-channel ADC, DMA Transfer, ADC+DMA Combined Acquisition
 
 ### Advanced Features
+
 Backup Registers, RTC Real-Time Clock, System Clock Configuration, Low-Power Modes (Sleep/Stop/Standby), Independent/Window Watchdog, Internal FLASH, Chip ID
 
 ### Tools & Resources
+
 Download Tools (FlyMcu/ST-Link), Troubleshooting Guides, VOFA+ Debugging, DS18B20 Temperature Module
 
 ## 💡 Usage Notes
