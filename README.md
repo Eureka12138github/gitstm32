@@ -1,8 +1,8 @@
+# STM32 Standard Peripheral Library Templates
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![STM32](https://img.shields.io/badge/STM32-F103-blue.svg)](https://www.st.com/en/microcontrollers-microprocessors/stm32f1-series.html)
 [![Keil](https://img.shields.io/badge/IDE-Keil%20MDK-orange.svg)](https://www.keil.com/download/)
-
-# STM32 Standard Peripheral Library Templates
 
 A collection of **54 functional templates** for STM32F103 microcontrollers based on Standard Peripheral Library V3.5.0.
 
@@ -12,7 +12,7 @@ A collection of **54 functional templates** for STM32F103 microcontrollers based
 
 ## Project Structure
 
-```
+```text
 gitstm32/
 ├── 00-Common/           # Common resources (3 templates)
 ├── 01-Basic/            # Basic peripherals (9 templates)
@@ -30,7 +30,7 @@ gitstm32/
 ### 00-Common - Common Resources
 
 | Name | Description |
-|------|-------------|
+| --- | --- |
 | [1-0 代码结构模板](00-Common/1-0%20代码结构模板/) | Code organization reference |
 | [1-1 接线图](00-Common/1-1%20接线图/) | Hardware connection diagrams |
 | [2-1 STM32 工程模版](00-Common/2-1%20STM32 工程模版/) | Keil MDK base project template |
@@ -40,7 +40,7 @@ gitstm32/
 ### 01-Basic - Basic Peripherals
 
 | Name | Function |
-|------|----------|
+| --- | --- |
 | [3-1 LED 闪烁](01-Basic/3-1%20LED 闪烁/) | GPIO output |
 | [3-2 LED 流水灯](01-Basic/3-2%20LED 流水灯/) | Sequential GPIO control |
 | [3-3 蜂鸣器](01-Basic/3-3%20蜂鸣器/) | Buzzer control |
@@ -56,7 +56,7 @@ gitstm32/
 ### 02-Communication - Communication Protocols
 
 | Name | Protocol | Device |
-|------|----------|--------|
+| --- | --- | --- |
 | [9-1 串口发送](02-Communication/9-1%20串口发送/) | UART | - |
 | [9-2 串口发送与接收](02-Communication/9-2%20串口发送与接收/) | UART Full-Duplex | - |
 | [9-3 串口收发 Hex 数据包](02-Communication/9-3%20串口收发 Hex 数据包/) | UART Binary Protocol | - |
@@ -71,7 +71,7 @@ gitstm32/
 ### 03-Timer - Timers
 
 | Name | Function |
-|------|----------|
+| --- | --- |
 | [6-1 定时器中断（内部触发）](03-Timer/6-1%20定时器中断（内部触发）/) | Basic timer interrupt |
 | [6-1-1 按键单击双击三击长按](03-Timer/6-1-1%20按键单击双击三击长按/) | Complex button detection |
 | [6-2 定时器中断（外部触发）](03-Timer/6-2%20定时器中断（外部触发）/) | External trigger |
@@ -89,7 +89,7 @@ gitstm32/
 ### 04-ADC-DMA - Data Acquisition
 
 | Name | Function |
-|------|----------|
+| --- | --- |
 | [7-1 AD 单通道](04-ADC-DMA/7-1%20AD 单通道/) | Single-channel ADC |
 | [7-2 AD 多通道](04-ADC-DMA/7-2%20AD 多通道/) | Multi-channel scanning |
 | [8-1 DMA 数据转运](04-ADC-DMA/8-1%20DMA 数据转运/) | DMA transfer |
@@ -100,7 +100,7 @@ gitstm32/
 ### 05-Advanced - Advanced Features
 
 | Name | Function |
-|------|----------|
+| --- | --- |
 | [12-1 读写备份寄存器](05-Advanced/12-1%20读写备份寄存器/) | Backup registers |
 | [12-2 实时时钟](05-Advanced/12-2%20实时时钟/) | RTC real-time clock |
 | [13-1 修改主频](05-Advanced/13-1%20修改主频/) | System clock configuration |
@@ -117,7 +117,7 @@ gitstm32/
 ### 99-Tools - Tools & Resources
 
 | Name | Purpose |
-|------|---------|
+| --- | --- |
 | [9-6 FlyMcu 串口下载&Stlink Utility](99-Tools/9-6%20FlyMcu 串口下载&Stlink%20Utility/) | Program download tools |
 | [STM32 疑难杂症](99-Tools/STM32 疑难杂症/) | Troubleshooting guides |
 | [VOFA 测试](99-Tools/VOFA 测试/) | VOFA+ serial debugger |
