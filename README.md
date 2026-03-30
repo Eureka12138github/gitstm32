@@ -1,157 +1,27 @@
-## Git 使用技巧汇总
+# STM32F103C8T6 Standard Library Templates
 
-### 修改 README 😊😊😊
+This repository contains my learning notes and project templates for the **STM32F103C8T6** microcontroller, developed using the **Standard Peripheral Library (SPL)**.
 
-### 测试 git diff 功能
+Unlike the HAL library, these projects focus on register-level understanding and bare-metal programming.
 
-- `git diff`：查看**未暂存文件**与上次提交之间的差异。
-- `git diff --staged`：查看**已暂存文件**与上次提交之间的差异。
+## 🛠️ Tech Stack
+- **MCU**: STM32F103C8T6 (ARM Cortex-M3)
+- **Library**: STM32 Standard Peripheral Library (SPL)
+- **IDE**: Keil MDK-ARM 
+- **Language**: C (C99)
 
-✅ **一句话总结**：如果文件在**未暂存区**，使用 `git diff`；如果文件**已暂存**，使用 `git diff --staged`。
+## 📂 Project Structure
+- **`/Template`**: A clean project template with startup files and system configuration ready to use.
+- **`/Examples`**:
+    - `GPIO`: LED blinking, Key input.
+    - `TIM`: PWM generation, Input capture.
+    - `USART`: Serial communication with printf retargeting.
+    - `ADC/DMA`: Analog sensor reading.
 
----
-
-### 提交操作
-
-- `git commit -a`：跳过 `git add` 阶段，一键暂存并提交所有修改。
-- `git commit --amend`：撤销最近一次提交，并允许：
-  - 使用 `git add` 补充遗漏的文件；
-  - 编辑或保留原有的提交信息后重新提交。
-
-🔁 适用于刚提交完发现还有文件没添加，或者需要修改提交信息的情况。
-
----
-
-### 文件重命名操作
-
-- `git mv <原文件名> <新文件名>`：用于重命名 Git 跟踪的文件。
-
-示例：
-
-```bash
-git mv test1.txt test.txt
-```
+## 🚀 Quick Start
+1. Clone the repo.
+2. Open the `.uvprojx` file in Keil.
+3. Build and Flash using an ST-Link debugger.
 
 ---
-
-### 撤销暂存操作
-
-- `git reset HEAD <文件名>`：取消某个文件的暂存状态。
-
-示例：
-
-```bash
-git reset HEAD README.md
-```
-
-📌 常用于误将某些文件加入暂存区后想将其移出的情况。
-
----
-
-### 放弃本地修改
-
-- `git restore <文件名>`：放弃对该文件的所有本地修改。
-
-⚠️ **注意**：该操作不可逆，请确保确实不需要这些修改后再执行。
-
----
-
-## 分支切换与紧急修复流程
-
-假设你现在正在解决问题53，当前处于 `iss53` 分支上，而 `main` 分支突然出现了问题，需要马上修复。
-
-✅ **处理步骤如下**：
-
-1. 切换回 `main` 分支：
-
-   ```bash
-   git switch main
-   ```
-
-2. 创建一个临时分支 `hotfix` 来修复问题：
-
-   ```bash
-   git checkout -b hotfix
-   ```
-
-3. 修复完成后，提交更改。
-
-4. 切换回 `main` 分支并合并修复内容：
-
-   ```bash
-   git checkout main
-   git merge hotfix
-   ```
-
-5. 删除临时分支（问题已修复）：
-
-   ```bash
-   git branch -d hotfix
-   ```
-
-6. 回到 `iss53` 分支继续开发：
-
-   ```bash
-   git switch iss53
-   ```
-
----
-
-## 合并冲突说明及解决方法
-
-### ⚠️ 冲突原因
-
-当 `main` 和 `iss53` 分支**同时修改了同一个文件的相同部分**（例如 `README.md`），Git 无法判断应该保留哪边的内容，就会提示冲突。
-
-### 示例场景
-
-- 在 `main` 分支下修改了 `README.md` 并提交；
-- 然后切换到 `iss53` 分支，在此分支下也修改了 `README.md` 并提交；
-- 最后切换回 `main` 分支，尝试合并 `iss53`，出现冲突。
-
----
-
-### 🔧 解决步骤
-
-1. 打开冲突文件（如 `README.md`），你会看到类似如下内容：
-
-   ```html
-   <<<<<<< HEAD
-   This is the content from main.
-   =======
-   This is the content from iss53.
-   >>>>>>> iss53
-   ```
-
-2. 手动编辑文件，选择你想要保留的内容，删除冲突标记。
-3. 添加修改后的文件到暂存区：
-
-   ```bash
-   git add README.md
-   ```
-
-4. 提交合并结果：
-
-   ```bash
-   git commit -m "Fixed conflict"
-   ```
-
----
-
-### 💡 如何避免冲突？
-
-- **保持分支同步**：在修改前先拉取最新代码；
-- **及时合并分支**：避免两个分支长时间不合并；
-- **明确分工**：团队协作时尽量避免多人修改同一文件的关键区域；
-- **使用 Pull Request 审查机制**：提前发现潜在冲突。
-
----
-
-## ✅ 实际测试说明
-
-这是一个测试内容，当前文本是在 `iss53` 分支下编写完成的。之前已经与 `main` 分支合并。
-
-按照预期，切换回 `main` 分支后，再合并 `iss53` 分支不会产生冲突，也就是说，在 `main` 分支下也能看到这段新增内容。
-
-
-
+> **Note**: This repository is for educational purposes. I am migrating to HAL/LL libraries for newer projects, but keeping this for legacy understanding.
