@@ -1,16 +1,16 @@
-# STM32 Standard Peripheral Library Templates
+# 🚀 STM32 Standard Peripheral Library Templates
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![STM32](https://img.shields.io/badge/STM32-F103-blue.svg)](https://www.st.com/en/microcontrollers-microprocessors/stm32f1-series.html)
 [![Keil](https://img.shields.io/badge/IDE-Keil%20MDK-orange.svg)](https://www.keil.com/download/)
 
-A collection of **54 functional templates** for STM32F103 microcontrollers based on Standard Peripheral Library V3.5.0.
+> A collection of **54 functional templates** for STM32F103 microcontrollers based on Standard Peripheral Library V3.5.0.
 
-> **Personal Learning Note:** This repository contains my learning notes and project templates. The code is based on the excellent tutorial by **Jiang Xie Ke Ji (江协科技)**, with my own comments and understanding added for self-study purposes.
+💡 **Personal Learning Note:** This repository contains my learning notes and project templates. The code is based on the excellent tutorial by **Jiang Xie Ke Ji (江协科技)**, with my own comments and understanding added for self-study purposes.
 
 ---
 
-## Project Structure
+## 📦 Project Structure
 
 ```text
 gitstm32/
@@ -25,9 +25,9 @@ gitstm32/
 
 ---
 
-## Template Index
+## 📋 Template Index
 
-### 00-Common - Common Resources
+### 🏗️ 00-Common - Common Resources
 
 | Name | Description |
 | --- | --- |
@@ -37,7 +37,7 @@ gitstm32/
 
 ---
 
-### 01-Basic - Basic Peripherals
+### 🔌 01-Basic - Basic Peripherals
 
 | Name | Function |
 | --- | --- |
@@ -53,7 +53,7 @@ gitstm32/
 
 ---
 
-### 02-Communication - Communication Protocols
+### 📡 02-Communication - Communication Protocols
 
 | Name | Protocol | Device |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ gitstm32/
 
 ---
 
-### 03-Timer - Timers
+### ⏱️ 03-Timer - Timers
 
 | Name | Function |
 | --- | --- |
@@ -86,7 +86,7 @@ gitstm32/
 
 ---
 
-### 04-ADC-DMA - Data Acquisition
+### 📊 04-ADC-DMA - Data Acquisition
 
 | Name | Function |
 | --- | --- |
@@ -97,7 +97,7 @@ gitstm32/
 
 ---
 
-### 05-Advanced - Advanced Features
+### ⚡ 05-Advanced - Advanced Features
 
 | Name | Function |
 | --- | --- |
@@ -114,7 +114,7 @@ gitstm32/
 
 ---
 
-### 99-Tools - Tools & Resources
+### 🛠️ 99-Tools - Tools & Resources
 
 | Name | Purpose |
 | --- | --- |
@@ -127,16 +127,16 @@ gitstm32/
 
 ---
 
-## Quick Start
+## ⚡ Quick Start
 
-### Prerequisites
+### 📝 Prerequisites
 
 - **IDE**: Keil MDK-ARM v5.x
 - **MCU**: STM32F103C8T6
 - **Firmware Library**: STM32 Standard Peripheral Library V3.5.0
 - **Debugger**: ST-Link V2 / J-Link / DAP-Link
 
-### Usage Steps
+### 🎯 Usage Steps
 
 1. **Open Project**: Navigate to template folder, double-click `project.uvprojx`
 2. **Build**: Press `F7` - ensure 0 Error, 0 Warning
@@ -146,9 +146,9 @@ gitstm32/
 
 ---
 
-## Git Workflow
+## 🔧 Git Workflow
 
-### .gitignore Configuration
+### 📄 .gitignore Configuration
 
 The following are gitignored:
 
@@ -156,7 +156,7 @@ The following are gitignored:
 - User config files (`.uvoptx`, `.uvguix.*`)
 - Debug logs and temporary files
 
-### Recommended Workflow
+### ✅ Recommended Workflow
 
 ```bash
 git clone https://github.com/Eureka12138github/gitstm32.git
@@ -169,12 +169,8 @@ git push
 
 ---
 
----
+## 📚 Resources
 
-## Resources
-
-- [STM32F103 Reference Manual RM0008](https://www.st.com/resource/en/reference_manual/rm0008.pdf)
-- [Standard Peripheral Library User Manual](https://www.st.com/resource/en/user_manual/um0736.pdf)
 - [Jiang Xie Ke Ji STM32 Tutorial](https://www.bilibili.com/list/ml1454946110?oid=206940155&bvid=BV1th411z7sn)
 
 ---
