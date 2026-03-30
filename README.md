@@ -20,7 +20,7 @@ STM32-StdPeriph-Templates/
 ### Prerequisites
 - **IDE**: Keil MDK-ARM v5.x
 - **Device**: STM32F103C8T6/ZET6/VCT6
-- **Debugger**: ST-Link V2 / J-Link
+- **Debugger**: DAP-Link / ST-Link V2 / J-Link
 
 ### Get Started
 ```bash
