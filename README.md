@@ -4,7 +4,7 @@
 
 ## 📦 Project Structure
 
-```
+```text
 STM32-StdPeriph-Templates/
 ├── 00-Common/           # Common resources (templates, wiring diagrams)
 ├── 01-Basic/            # Basic peripherals (GPIO, OLED, sensors)
@@ -23,16 +23,13 @@ STM32-StdPeriph-Templates/
 - **Debugger**: DAP-Link / ST-Link V2 / J-Link
 
 ### Get Started
+
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_USERNAME/STM32-StdPeriph-Templates.git
-
+git clone https://github.com/Eureka12138github/gitstm32.git
 # Open project
-cd STM32-StdPeriph-Templates
+cd gitstm32
 # Open .uvprojx file in Keil MDK
-
-# Build & Flash
-Press F7 to build → Ctrl+F8 to flash
 ```
 
 ## 📋 Template Categories
@@ -72,8 +69,4 @@ MIT License
 
 ---
 
-<div align="center">
-
 **Happy Coding with STM32!** 🚀
-
-</div>
